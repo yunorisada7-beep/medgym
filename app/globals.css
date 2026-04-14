@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Noto Sans JP is loaded via next/font in layout.tsx */
+
+@layer base {
+  :root {
+    --background: #f8f9fa;
+    --foreground: #1a1a2e;
+    --card: #ffffff;
+    --card-foreground: #1a1a2e;
+    --accent: #00d26a;
+    --accent-foreground: #ffffff;
+    --muted: #e5e7eb;
+    --muted-foreground: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  .dark {
+    --background: #0f0f1a;
+    --foreground: #e8e8f0;
+    --card: #1a1a2e;
+    --card-foreground: #e8e8f0;
+    --accent: #00d26a;
+    --accent-foreground: #ffffff;
+    --muted: #2a2a3e;
+    --muted-foreground: #9ca3af;
+    --border: #2a2a3e;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+}
+
+@layer utilities {
+  .card-base {
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-xl border border-[var(--border)] shadow-sm;
+  }
+}

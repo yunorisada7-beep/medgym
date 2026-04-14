@@ -1,0 +1,33 @@
+{
+  "chest": [
+    { "id": "bench_press",    "name": "ベンチプレス" },
+    { "id": "dumbbell_press", "name": "ダンベルプレス" },
+    { "id": "chest_press",    "name": "チェストプレス" },
+    { "id": "dips",           "name": "ディップス" },
+    { "id": "pec_fly",        "name": "ペックフライ" }
+  ],
+  "arm": [
+    { "id": "bicep_curl",       "name": "バイセップカール" },
+    { "id": "hammer_curl",      "name": "ハンマーカール" },
+    { "id": "tricep_pressdown", "name": "トライセップスプレスダウン" },
+    { "id": "skull_crusher",    "name": "スカルクラッシャー" }
+  ],
+  "shoulder": [
+    { "id": "shoulder_press", "name": "ショルダープレス" },
+    { "id": "side_raise",     "name": "サイドレイズ" },
+    { "id": "front_raise",    "name": "フロントレイズ" },
+    { "id": "face_pull",      "name": "フェイスプル" }
+  ],
+  "back": [
+    { "id": "deadlift",      "name": "デッドリフト" },
+    { "id": "lat_pulldown",  "name": "ラットプルダウン" },
+    { "id": "bent_over_row", "name": "ベントオーバーロー" },
+    { "id": "chin_up",       "name": "チンニング" }
+  ],
+  "leg": [
+    { "id": "squat",      "name": "スクワット" },
+    { "id": "leg_press",  "name": "レッグプレス" },
+    { "id": "leg_curl",   "name": "レッグカール" },
+    { "id": "calf_raise", "name": "カーフレイズ" }
+  ]
+}
