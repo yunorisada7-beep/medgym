@@ -24,14 +24,14 @@ export function QuizQuestion({ question, exerciseId, date, onAnswered }: Props) 
   const [selected, setSelected] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSelect = (index: number) => {
+  const handleSelect = async (index: number) => {
     if (submitted) return
     setSelected(index)
     setSubmitted(true)
 
     const isCorrect = index === question.answer
 
-    // 結果をlocalStorageに保存
+    // 結果をSupabaseに保存(非同期、fire-and-forget)
     addQuizResult({
       date,
       exercise_id: exerciseId,

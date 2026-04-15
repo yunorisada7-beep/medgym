@@ -53,34 +53,34 @@ export default function QuizPage() {
   const [answered, setAnswered] = useState(false)
 
   useEffect(() => {
-    const workouts = getWorkouts(date)
+    getWorkouts(date).then((workouts) => {
+      if (!workouts || workouts.length === 0) {
+        setLoading(false)
+        return
+      }
 
-    if (!workouts || workouts.length === 0) {
+      const qList: QuestionData[] = []
+      const dayIndex = dateToDayIndex(date)
+
+      for (const w of workouts) {
+        if (w.exercise_id.startsWith('custom_')) continue
+        const content = contentMap[w.exercise_id]
+        if (!content || !content.questions.length) continue
+        const questionIndex = dayIndex % content.questions.length
+        qList.push({
+          exercise_id: w.exercise_id,
+          exercise_name: w.exercise_name,
+          question: content.questions[questionIndex],
+        })
+      }
+
+      // 重複除外
+      const unique = qList.filter(
+        (q, i, arr) => arr.findIndex((x) => x.exercise_id === q.exercise_id) === i
+      )
+      setQuestions(unique)
       setLoading(false)
-      return
-    }
-
-    const qList: QuestionData[] = []
-    const dayIndex = dateToDayIndex(date)
-
-    for (const w of workouts) {
-      if (w.exercise_id.startsWith('custom_')) continue
-      const content = contentMap[w.exercise_id]
-      if (!content || !content.questions.length) continue
-      const questionIndex = dayIndex % content.questions.length
-      qList.push({
-        exercise_id: w.exercise_id,
-        exercise_name: w.exercise_name,
-        question: content.questions[questionIndex],
-      })
-    }
-
-    // 重複除外
-    const unique = qList.filter(
-      (q, i, arr) => arr.findIndex((x) => x.exercise_id === q.exercise_id) === i
-    )
-    setQuestions(unique)
-    setLoading(false)
+    })
   }, [date])
 
   const handleAnswered = (isCorrect: boolean) => {

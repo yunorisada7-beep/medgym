@@ -21,8 +21,13 @@ export function WorkoutForm({ date, onSaved }: Props) {
   const [customName, setCustomName] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const loadCustomExercises = async () => {
+    const list = await getCustomExercises()
+    setCustomExercises(list)
+  }
+
   useEffect(() => {
-    setCustomExercises(getCustomExercises())
+    loadCustomExercises()
   }, [])
 
   useEffect(() => {
@@ -38,14 +43,14 @@ export function WorkoutForm({ date, onSaved }: Props) {
     return [...builtIn, ...custom]
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedExercise) return
     setSaving(true)
 
     const allExs = getAllExercises(selectedGroup)
     const ex = allExs.find((e) => e.id === selectedExercise)
 
-    addWorkout({
+    await addWorkout({
       date,
       muscle_group: selectedGroup,
       exercise_id: selectedExercise,
@@ -59,12 +64,12 @@ export function WorkoutForm({ date, onSaved }: Props) {
     onSaved()
   }
 
-  const handleAddCustom = () => {
+  const handleAddCustom = async () => {
     if (!customName.trim()) return
-    addCustomExercise(selectedGroup, customName.trim())
+    await addCustomExercise(selectedGroup, customName.trim())
     setCustomName('')
     setShowCustomModal(false)
-    setCustomExercises(getCustomExercises())
+    await loadCustomExercises()
   }
 
   return (

@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { type ReactNode } from 'react'
 
 function AuthGate({ children }: { children: ReactNode }) {
-  const { user, logout, loading } = useAuth()
+  const { user, signOut, loading } = useAuth()
 
   if (loading) {
     return (
@@ -40,7 +40,7 @@ function AuthGate({ children }: { children: ReactNode }) {
             </Link>
             <ThemeToggle />
             <button
-              onClick={logout}
+              onClick={() => signOut()}
               className="p-2 rounded-lg hover:bg-[var(--muted)] transition-colors text-[var(--muted-foreground)]"
               title="ログアウト"
             >

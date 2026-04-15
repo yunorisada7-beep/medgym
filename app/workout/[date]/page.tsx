@@ -16,16 +16,17 @@ export default function WorkoutPage() {
   const [workouts, setWorkouts] = useState<Workout[]>([])
   const [showEndDialog, setShowEndDialog] = useState(false)
 
-  const loadWorkouts = useCallback(() => {
-    setWorkouts(getWorkouts(date))
+  const loadWorkouts = useCallback(async () => {
+    const list = await getWorkouts(date)
+    setWorkouts(list)
   }, [date])
 
   useEffect(() => {
     loadWorkouts()
   }, [loadWorkouts])
 
-  const handleDelete = (id: number) => {
-    deleteWorkout(id)
+  const handleDelete = async (id: number) => {
+    await deleteWorkout(id)
     loadWorkouts()
   }
 

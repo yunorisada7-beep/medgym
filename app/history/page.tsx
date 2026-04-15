@@ -17,11 +17,12 @@ export default function HistoryPage() {
   const [selectedExercise, setSelectedExercise] = useState('')
 
   useEffect(() => {
-    const all = getWorkouts()
-    setWorkouts(all)
-    if (all.length > 0) {
-      setSelectedExercise(all[0].exercise_id)
-    }
+    getWorkouts().then((all) => {
+      setWorkouts(all)
+      if (all.length > 0) {
+        setSelectedExercise(all[0].exercise_id)
+      }
+    })
   }, [])
 
   // ユニークなエクササイズリスト

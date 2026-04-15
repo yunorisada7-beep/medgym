@@ -14,7 +14,7 @@ export function CalendarView() {
   const month = currentDate.getMonth()
 
   useEffect(() => {
-    setWorkoutDates(getWorkoutDates())
+    getWorkoutDates().then(setWorkoutDates)
   }, [])
 
   const firstDay = new Date(year, month, 1).getDay()
