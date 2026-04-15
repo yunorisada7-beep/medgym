@@ -4,19 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { WorkoutForm } from '@/components/WorkoutForm'
 import { ExerciseCard } from '@/components/ExerciseCard'
+import { getWorkouts, deleteWorkout, type Workout } from '@/lib/storage'
 import { motion } from 'framer-motion'
 import { ArrowLeft, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
-
-interface Workout {
-  id: number
-  exercise_id: string
-  exercise_name: string
-  muscle_group: string
-  reps: number
-  sets: number
-  weight_kg: number
-}
 
 export default function WorkoutPage() {
   const params = useParams()
@@ -25,19 +16,17 @@ export default function WorkoutPage() {
   const [workouts, setWorkouts] = useState<Workout[]>([])
   const [showEndDialog, setShowEndDialog] = useState(false)
 
-  const fetchWorkouts = useCallback(async () => {
-    const res = await fetch(`/api/workouts?date=${date}`)
-    const data = await res.json()
-    setWorkouts(data)
+  const loadWorkouts = useCallback(() => {
+    setWorkouts(getWorkouts(date))
   }, [date])
 
   useEffect(() => {
-    fetchWorkouts()
-  }, [fetchWorkouts])
+    loadWorkouts()
+  }, [loadWorkouts])
 
-  const handleDelete = async (id: number) => {
-    await fetch(`/api/workouts?id=${id}`, { method: 'DELETE' })
-    fetchWorkouts()
+  const handleDelete = (id: number) => {
+    deleteWorkout(id)
+    loadWorkouts()
   }
 
   return (
@@ -57,7 +46,7 @@ export default function WorkoutPage() {
         </div>
       </div>
 
-      <WorkoutForm date={date} onSaved={fetchWorkouts} />
+      <WorkoutForm date={date} onSaved={loadWorkouts} />
 
       {workouts.length > 0 && (
         <div className="space-y-3">

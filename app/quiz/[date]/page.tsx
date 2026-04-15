@@ -4,8 +4,29 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { QuizQuestion } from '@/components/QuizQuestion'
 import { LoadingCard } from '@/components/LoadingCard'
+import { getWorkouts } from '@/lib/storage'
+import medicalContent from '@/data/medical-content.json'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, RotateCcw, Home, Trophy } from 'lucide-react'
+
+const contentMap = medicalContent as Record<string, {
+  medical: unknown
+  questions: {
+    source: string
+    question: string
+    choices: string[]
+    answer: number
+    explanation: string
+  }[]
+}>
+
+function dateToDayIndex(dateStr: string): number {
+  const parts = dateStr.split('-')
+  const y = parseInt(parts[0])
+  const m = parseInt(parts[1])
+  const d = parseInt(parts[2])
+  return y * 366 + m * 31 + d
+}
 
 interface QuestionData {
   exercise_id: string
@@ -32,51 +53,34 @@ export default function QuizPage() {
   const [answered, setAnswered] = useState(false)
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        // 当日の閲覧済みコンテンツを取得
-        const res = await fetch(`/api/workouts?date=${date}`)
-        const workouts = await res.json()
+    const workouts = getWorkouts(date)
 
-        if (!workouts || workouts.length === 0) {
-          setLoading(false)
-          return
-        }
-
-        // 各エクササイズの問題を取得（カスタム除外）
-        const qList: QuestionData[] = []
-        for (const w of workouts) {
-          if (w.exercise_id.startsWith('custom_')) continue
-          try {
-            const cRes = await fetch(
-              `/api/generate-content?exercise_id=${w.exercise_id}&exercise_name=${encodeURIComponent(w.exercise_name)}&muscle_group=${w.muscle_group}&date=${date}`
-            )
-            const cData = await cRes.json()
-            if (cData.question) {
-              qList.push({
-                exercise_id: w.exercise_id,
-                exercise_name: w.exercise_name,
-                question: cData.question,
-              })
-            }
-          } catch {
-            // skip failed
-          }
-        }
-
-        // 重複除外
-        const unique = qList.filter(
-          (q, i, arr) => arr.findIndex((x) => x.exercise_id === q.exercise_id) === i
-        )
-        setQuestions(unique)
-      } catch {
-        // skip
-      } finally {
-        setLoading(false)
-      }
+    if (!workouts || workouts.length === 0) {
+      setLoading(false)
+      return
     }
 
-    fetchQuestions()
+    const qList: QuestionData[] = []
+    const dayIndex = dateToDayIndex(date)
+
+    for (const w of workouts) {
+      if (w.exercise_id.startsWith('custom_')) continue
+      const content = contentMap[w.exercise_id]
+      if (!content || !content.questions.length) continue
+      const questionIndex = dayIndex % content.questions.length
+      qList.push({
+        exercise_id: w.exercise_id,
+        exercise_name: w.exercise_name,
+        question: content.questions[questionIndex],
+      })
+    }
+
+    // 重複除外
+    const unique = qList.filter(
+      (q, i, arr) => arr.findIndex((x) => x.exercise_id === q.exercise_id) === i
+    )
+    setQuestions(unique)
+    setLoading(false)
   }, [date])
 
   const handleAnswered = (isCorrect: boolean) => {

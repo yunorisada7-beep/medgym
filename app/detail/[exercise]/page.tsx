@@ -1,13 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { MedicalDetail } from '@/components/MedicalDetail'
 import { QuizQuestion } from '@/components/QuizQuestion'
-import { LoadingCard } from '@/components/LoadingCard'
+import { addViewedQuestion } from '@/lib/storage'
+import medicalContent from '@/data/medical-content.json'
 import { motion } from 'framer-motion'
-import { ArrowLeft, AlertTriangle } from 'lucide-react'
-import Link from 'next/link'
+import { ArrowLeft, AlertTriangle, Dumbbell } from 'lucide-react'
+
+const contentMap = medicalContent as Record<string, {
+  medical: {
+    muscles: { primary: string[]; secondary: string[] }
+    origin: string
+    insertion: string
+    nerve: string
+    diseases: string[]
+    clinical_note: string
+  }
+  questions: {
+    source: string
+    question: string
+    choices: string[]
+    answer: number
+    explanation: string
+  }[]
+}>
+
+function dateToDayIndex(dateStr: string): number {
+  const parts = dateStr.split('-')
+  const y = parseInt(parts[0])
+  const m = parseInt(parts[1])
+  const d = parseInt(parts[2])
+  return y * 366 + m * 31 + d
+}
 
 interface MedicalInfo {
   muscles: { primary: string[]; secondary: string[] }
@@ -26,51 +52,37 @@ interface QuestionInfo {
   explanation: string
 }
 
-export default function DetailPage() {
+function DetailContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const exerciseId = params.exercise as string
   const exerciseName = searchParams.get('exercise_name') || ''
-  const muscleGroup = searchParams.get('muscle_group') || ''
   const date = searchParams.get('date') || ''
 
   const [medical, setMedical] = useState<MedicalInfo | null>(null)
   const [question, setQuestion] = useState<QuestionInfo | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const isCustom = exerciseId.startsWith('custom_')
 
   useEffect(() => {
-    if (isCustom) {
-      setLoading(false)
+    if (isCustom) return
+
+    const content = contentMap[exerciseId]
+    if (!content) {
+      setError('このメニューの医学情報はありません。')
       return
     }
 
-    const fetchContent = async () => {
-      try {
-        const res = await fetch(
-          `/api/generate-content?exercise_id=${exerciseId}&exercise_name=${encodeURIComponent(exerciseName)}&muscle_group=${muscleGroup}&date=${date}`
-        )
-        const data = await res.json()
+    setMedical(content.medical)
 
-        if (data.error) {
-          setError(data.error)
-        } else {
-          setMedical(data.medical)
-          setQuestion(data.question)
-        }
-      } catch {
-        setError('情報を取得できませんでした。再度お試しください。')
-      } finally {
-        setLoading(false)
-      }
+    if (date && content.questions.length > 0) {
+      const dayIndex = dateToDayIndex(date)
+      const questionIndex = dayIndex % content.questions.length
+      setQuestion(content.questions[questionIndex])
+      addViewedQuestion(date, exerciseId)
     }
-
-    if (exerciseId && exerciseName && muscleGroup && date) {
-      fetchContent()
-    }
-  }, [exerciseId, exerciseName, muscleGroup, date, isCustom])
+  }, [exerciseId, date, isCustom])
 
   return (
     <motion.div
@@ -96,13 +108,6 @@ export default function DetailPage() {
         </div>
       )}
 
-      {loading && !isCustom && (
-        <div className="space-y-4">
-          <LoadingCard />
-          <LoadingCard />
-        </div>
-      )}
-
       {error && (
         <div className="card-base p-4 text-sm text-red-500 flex items-center gap-2">
           <AlertTriangle size={16} />
@@ -121,5 +126,17 @@ export default function DetailPage() {
         </div>
       )}
     </motion.div>
+  )
+}
+
+export default function DetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <Dumbbell size={32} className="text-accent animate-pulse" />
+      </div>
+    }>
+      <DetailContent />
+    </Suspense>
   )
 }

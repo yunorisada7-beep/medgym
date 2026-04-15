@@ -3,21 +3,11 @@
 import { useState, useEffect } from 'react'
 import { WeightChart } from '@/components/WeightChart'
 import { MuscleBalanceChart } from '@/components/MuscleBalanceChart'
+import { getWorkouts, type Workout } from '@/lib/storage'
 import { motion } from 'framer-motion'
 import { ArrowLeft, BarChart3, List } from 'lucide-react'
 import Link from 'next/link'
 import { muscleGroupMap } from '@/lib/exercises'
-
-interface Workout {
-  id: number
-  date: string
-  muscle_group: string
-  exercise_id: string
-  exercise_name: string
-  reps: number
-  sets: number
-  weight_kg: number
-}
 
 type Tab = 'list' | 'chart'
 
@@ -27,26 +17,11 @@ export default function HistoryPage() {
   const [selectedExercise, setSelectedExercise] = useState('')
 
   useEffect(() => {
-    const fetchAll = async () => {
-      // 全日付を取得してから各日付のワークアウトを取得
-      const datesRes = await fetch('/api/workouts')
-      const dates: string[] = await datesRes.json()
-
-      const all: Workout[] = []
-      for (const date of dates) {
-        const res = await fetch(`/api/workouts?date=${date}`)
-        const data = await res.json()
-        all.push(...data)
-      }
-      setWorkouts(all)
-
-      // デフォルトのエクササイズ選択
-      if (all.length > 0) {
-        setSelectedExercise(all[0].exercise_id)
-      }
+    const all = getWorkouts()
+    setWorkouts(all)
+    if (all.length > 0) {
+      setSelectedExercise(all[0].exercise_id)
     }
-
-    fetchAll()
   }, [])
 
   // ユニークなエクササイズリスト

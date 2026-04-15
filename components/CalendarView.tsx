@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import { getWorkoutDates } from '@/lib/storage'
 import Link from 'next/link'
 
 export function CalendarView() {
@@ -13,10 +14,7 @@ export function CalendarView() {
   const month = currentDate.getMonth()
 
   useEffect(() => {
-    fetch('/api/workouts')
-      .then((r) => r.json())
-      .then((dates: string[]) => setWorkoutDates(dates))
-      .catch(() => {})
+    setWorkoutDates(getWorkoutDates())
   }, [])
 
   const firstDay = new Date(year, month, 1).getDay()

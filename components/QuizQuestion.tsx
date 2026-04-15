@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, XCircle } from 'lucide-react'
+import { addQuizResult } from '@/lib/storage'
 
 interface Question {
   source: string
@@ -23,23 +24,19 @@ export function QuizQuestion({ question, exerciseId, date, onAnswered }: Props) 
   const [selected, setSelected] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSelect = async (index: number) => {
+  const handleSelect = (index: number) => {
     if (submitted) return
     setSelected(index)
     setSubmitted(true)
 
     const isCorrect = index === question.answer
 
-    // 結果を保存
-    await fetch('/api/quiz-results', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date,
-        exercise_id: exerciseId,
-        selected_answer: index,
-        is_correct: isCorrect,
-      }),
+    // 結果をlocalStorageに保存
+    addQuizResult({
+      date,
+      exercise_id: exerciseId,
+      selected_answer: index,
+      is_correct: isCorrect,
     })
 
     onAnswered?.(isCorrect)

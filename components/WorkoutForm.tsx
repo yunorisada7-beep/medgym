@@ -2,13 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { exercises, muscleGroups, type MuscleGroup, type Exercise } from '@/lib/exercises'
+import { getCustomExercises, addCustomExercise, addWorkout, type CustomExercise } from '@/lib/storage'
 import { Plus, Save } from 'lucide-react'
-
-interface CustomExercise {
-  id: number
-  muscle_group: string
-  name: string
-}
 
 interface Props {
   date: string
@@ -27,19 +22,13 @@ export function WorkoutForm({ date, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchCustomExercises()
+    setCustomExercises(getCustomExercises())
   }, [])
 
   useEffect(() => {
     const allExs = getAllExercises(selectedGroup)
     if (allExs.length > 0) setSelectedExercise(allExs[0].id)
   }, [selectedGroup, customExercises])
-
-  const fetchCustomExercises = async () => {
-    const res = await fetch('/api/custom-exercises')
-    const data = await res.json()
-    setCustomExercises(data)
-  }
 
   const getAllExercises = (group: MuscleGroup): Exercise[] => {
     const builtIn = exercises[group] || []
@@ -49,41 +38,33 @@ export function WorkoutForm({ date, onSaved }: Props) {
     return [...builtIn, ...custom]
   }
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!selectedExercise) return
     setSaving(true)
 
     const allExs = getAllExercises(selectedGroup)
     const ex = allExs.find((e) => e.id === selectedExercise)
 
-    await fetch('/api/workouts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date,
-        muscle_group: selectedGroup,
-        exercise_id: selectedExercise,
-        exercise_name: ex?.name || selectedExercise,
-        reps,
-        sets,
-        weight_kg: weight,
-      }),
+    addWorkout({
+      date,
+      muscle_group: selectedGroup,
+      exercise_id: selectedExercise,
+      exercise_name: ex?.name || selectedExercise,
+      reps,
+      sets,
+      weight_kg: weight,
     })
 
     setSaving(false)
     onSaved()
   }
 
-  const handleAddCustom = async () => {
+  const handleAddCustom = () => {
     if (!customName.trim()) return
-    await fetch('/api/custom-exercises', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ muscle_group: selectedGroup, name: customName.trim() }),
-    })
+    addCustomExercise(selectedGroup, customName.trim())
     setCustomName('')
     setShowCustomModal(false)
-    fetchCustomExercises()
+    setCustomExercises(getCustomExercises())
   }
 
   return (
